@@ -1,47 +1,49 @@
 "use client"; // enable client-side interactivity
-
-import { useState } from "react";
-
-interface Todo {
-  id: number;
-  text: string;
-}
+import { useEffect, useState } from "react";
+import { getTodos, addTodo, updateTodo, deleteTodo } from "@/service/api";
+import TodoList from "@/components/TodoList";
+import { Todo } from "@/types/todo";
 
 export default function Home() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [input, setInput] = useState("");
   const [editId, setEditId] = useState<number | null>(null);
 
-  const handleAddTodo = () => {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
+  useEffect(() => {
+    getTodos().then(setTodos).catch(console.error);
+  }, []);
+
+  const handleAddTodo = async () => {
     if (input.trim() === "") return;
-    if (editId !== null) {
-      setTodos((prev) =>
-        prev.map((todo) =>
-          todo.id === editId ? { ...todo, text: input } : todo
-        )
-      );
-      setEditId(null);
-    } else {
-      setTodos((prev) => [
-        ...prev,
-        { id: Date.now(), text: input },
-      ]);
+
+    try {
+      if (editId !== null) {
+        await updateTodo(editId, input);
+        setEditId(null);
+      } else {
+        await addTodo(input);
+      }
+      setInput("");
+      const updatedTodos = await getTodos();
+      setTodos(updatedTodos);
+    } catch (error) {
+      console.error("Error adding/updating todo:", error);
     }
-    setInput("");
-  };
+  }
 
   const handleEditTodo = (id: number) => {
-    const todo = todos.find((todo) => todo.id === id);
-    if (todo) {
-      setInput(todo.text);
-      setEditId(id);
-    }
-  };
+    setInput(todos.find(todo => todo.id === id)?.text || "");
+    setEditId(id);
+  }
 
-  const handleDeleteTodo = (id: number) => {
-    setTodos((prev) => prev.filter((todo) => todo.id !== id));
-  };
-
+  const handleDeleteTodo = async (id: number) => {
+    await deleteTodo(id);
+    const updatedTodos = await getTodos();
+    setTodos(updatedTodos);
+  }
+  
   return (
     <div className="min-h-screen p-8 bg-gray-100 flex flex-col items-center">
       <h1 className="text-3xl font-bold mb-6 text-black">Todo App</h1>
@@ -60,31 +62,7 @@ export default function Home() {
           {editId !== null ? "Update" : "Add"}
         </button>
       </div>
-
-      <ul className="w-full max-w-md space-y-4">
-        {todos.map((todo) => (
-          <li
-            key={todo.id}
-            className="flex justify-between items-center bg-white p-4 rounded-md shadow text-black"
-          >
-            <span>{todo.text}</span>
-            <div className="flex gap-2">
-              <button
-                onClick={() => handleEditTodo(todo.id)}
-                className="text-green-600 hover:underline"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => handleDeleteTodo(todo.id)}
-                className="text-red-600 hover:underline"
-              >
-                Delete
-              </button>
-            </div>
-          </li>
-        ))}
-      </ul>
+        <TodoList todos={todos} onDelete={handleDeleteTodo} onEdit={handleEditTodo}/>
     </div>
   );
 }

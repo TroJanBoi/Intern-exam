@@ -90,12 +90,20 @@ Answer2/
 
 ## 🚀 How to Run
 
+### Start PostgreSQL with Docker Compose
+
+```bash
+cd Answer2
+docker-compose up -d 
+```
+
 ### 🖥️ Backend (Go API)
 
 1. Create `.env` in `Answer2/backend/`:
 
 ```env
-DATABASE_URL=host=localhost user=postgres password=admin123 dbname=todo_db port=5432 sslmode=disable
+# .env.example
+DATABASE_URL=host=localhost user=youruser password=yourpass dbname=yourdb port=5432 sslmode=disable
 ```
 
 2. Install & run:

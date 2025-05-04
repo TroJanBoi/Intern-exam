@@ -79,7 +79,7 @@ Answer2/
 │   ├── db/                 # DB connection logic
 │   ├── docs/               # Swagger docs (auto-generated)
 │   └── main.go             # Entry point
-├── frontend/               # Next.js Frontend (App Router)
+├── frontend/todo-app       # Next.js Frontend (App Router)
 │   ├── app/                # Pages (App Router)
 │   ├── components/         # UI Components
 │   ├── services/           # API logic
